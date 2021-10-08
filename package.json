@@ -1,0 +1,13 @@
+{
+  "name": "particle-practise",
+  "version": "0.0.1",
+  "description": "",
+  "keywords": [],
+  "author": "zhen-wei",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@types/dat.gui": "^0.7.7",
+    "@types/stats": "^0.16.30",
+    "typescript": "^4.4.2"
+  }
+}
