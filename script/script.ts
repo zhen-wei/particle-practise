@@ -86,6 +86,7 @@ gui.add(controls, 'clearForcefield');
 
 const stats = new Stats();
 stats.showPanel(0);
+
 document.body.appendChild(stats.dom);
 
 /** ==================================== */
