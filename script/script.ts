@@ -16,10 +16,8 @@ const color2ImageSource: Map<string, ImageSource> = new Map();
 const particles: Set<Particle> = new Set();
 /** 斥力場集合 */
 const forcefields: Forcefield[]= [];
-
+/** 滑鼠位置 */
 const mousePos = new Vec2();
-// 力場系統陣列
-const forces = new Set();
 
 // 控制
 const controls = {
@@ -91,7 +89,6 @@ document.body.appendChild(stats.dom);
 
 /** ==================================== */
 
-
 async function preRender() {    
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
@@ -158,17 +155,7 @@ function update() {
 }
 
 function fiexdUpdate() {
-    for (let i = controls.count; i > 0; i--) {
-        const args: ParticleArgs = {
-            p: mousePos.clone(),
-            v: new Vec2(Math.random() * controls.randomV - controls.randomV / 2,
-                Math.random() * controls.randomV - controls.randomV / 2),
-            r: Math.random() * controls.randomR,
-            color: toColorCode(255, Math.floor(Math.random()*17)*15, Math.floor(Math.random()*10)*15)
-        }
-        const particle = new Particle(args);
-        particles.add(particle);
-    }
+    // 先更新已有粒子
     for (const particle of particles) {
         updateParticle(particle);
         if (particle.dead) {
@@ -179,7 +166,26 @@ function fiexdUpdate() {
             }
         }
     }
-    
+    // 加入新粒子並更新
+    for (let i = controls.count; i > 0; i--) {
+        const args: ParticleArgs = {
+            p: mousePos.clone(),
+            v: new Vec2(Math.random() * controls.randomV - controls.randomV / 2,
+                Math.random() * controls.randomV - controls.randomV / 2),
+            r: Math.random() * controls.randomR,
+            color: toColorCode(255, Math.floor(Math.random()*17)*15, Math.floor(Math.random()*10)*15)
+        }
+        const particle = new Particle(args);
+        updateParticle(particle);
+        if (particle.dead) {
+            particles.delete(particle);
+        } else {
+            for (const forcefield of forcefields) {
+                forcefield.affect(particle);
+            }
+            particles.add(particle);
+        } 
+    }
     
     controls.total = particles.size;
     total.updateDisplay();
@@ -187,10 +193,6 @@ function fiexdUpdate() {
 
 
 function updateParticle(particle: Particle) {
-    if (particle.dead) {
-        return;
-    }
-    
     // 隨時間縮小
     particle.r *= controls.fade;
 
@@ -209,16 +211,13 @@ function updateParticle(particle: Particle) {
     // 摩擦力（衰減）
     particle.v = particle.v.mul(0.99);
     
-    // 粒子碰撞
-    // 上邊、右邊
+    // 粒子碰撞 (邊界)
     if (particle.p.y + particle.r > canvas.height) {
         particle.v.y = -Math.abs(particle.v.y);
     }
-
     if (particle.p.x + particle.r > canvas.width) {
         particle.v.x = -Math.abs(particle.v.x);
     }
-    // 左邊、下邊
     if (particle.p.y - particle.r < 0) {
         particle.v.y = Math.abs(particle.v.y);
     }

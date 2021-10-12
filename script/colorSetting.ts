@@ -3,12 +3,12 @@ const maximum = {
     r: 255,
     g: 255,
     b: 150   
-}
+};
 const count = {
     r: 1,
     g: maximum.g / interval,
     b: maximum.b / interval
-}
+};
 
 export const colorSetting = Object.freeze({
     interval,
